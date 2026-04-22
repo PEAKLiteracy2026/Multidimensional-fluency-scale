@@ -1,4 +1,4 @@
-[index.html](https://github.com/user-attachments/files/26988967/index.html)
+[index.html](https://github.com/user-attachments/files/26989149/index.html)
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -103,7 +103,7 @@
 </div>
 
 <script>
-const SCRIPT_URL = 'https://script.google.com/a/macros/peakliteracy.org/s/AKfycbywcJExYUtTao7ajZ8ciR12CAGnnuEzpiBk3Cc9pNDSUh832ndIVIqLaeXeOh5u42fySA/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbywcJExYUtTao7ajZ8ciR12CAGnnuEzpiBk3Cc9pNDSUh832ndIVIqLaeXeOh5u42fySA/exec';
 
 const DIMENSIONS = [
   { id: 'expression', title: 'Expression & volume', levels: [
@@ -254,10 +254,9 @@ function renderSessionLog() {
 }
 
 async function saveToSheet(data) {
-  const response = await fetch(SCRIPT_URL, {
+  await fetch(SCRIPT_URL + '?callback=cb', {
     method: 'POST',
     mode: 'no-cors',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data)
   });
 }
@@ -282,7 +281,12 @@ document.getElementById('btn-save').addEventListener('click', async function() {
   btn.disabled = true;
   statusEl.innerHTML = '<span class="spinner"></span>Saving…';
 
-  const rowData = { date: dateVal, student: studentVal, tutor: tutorVal, expression: scores.expression, phrasing: scores.phrasing, smoothness: scores.smoothness, pace: scores.pace, total, status };
+  const rowData = {
+    date: dateVal, student: studentVal, tutor: tutorVal,
+    expression: scores.expression, phrasing: scores.phrasing,
+    smoothness: scores.smoothness, pace: scores.pace,
+    total, status
+  };
 
   try {
     await saveToSheet(rowData);
