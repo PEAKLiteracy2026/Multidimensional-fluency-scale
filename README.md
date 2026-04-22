@@ -1,4 +1,4 @@
-[index.html](https://github.com/user-attachments/files/26989149/index.html)
+[index.html](https://github.com/user-attachments/files/26989410/index.html)
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -102,8 +102,10 @@
   <div class="footer">PEAK Literacy &mdash; peakliteracy.org &mdash; Adapted from Zutell &amp; Rasinski, 1991</div>
 </div>
 
+<iframe name="hidden-submit" style="display:none;"></iframe>
+
 <script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbywcJExYUtTao7ajZ8ciR12CAGnnuEzpiBk3Cc9pNDSUh832ndIVIqLaeXeOh5u42fySA/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxHt8M9OHfUVJ12NvEUe_bJ6aXxl6GSsK8N87vShZ3XSY7SMJv-m60a_Pypqnyf78LEyA/exec';
 
 const DIMENSIONS = [
   { id: 'expression', title: 'Expression & volume', levels: [
@@ -156,11 +158,9 @@ function getStudentSessionIndex(studentName, dateStr) {
 
 function applyColor(color) {
   currentColor = color;
-  const tc = document.getElementById('total-card');
-  const td = document.getElementById('total-display');
-  tc.style.background = color.fill;
-  tc.style.borderColor = color.border;
-  td.style.color = color.text;
+  document.getElementById('total-card').style.background = color.fill;
+  document.getElementById('total-card').style.borderColor = color.border;
+  document.getElementById('total-display').style.color = color.text;
   document.querySelectorAll('.dim-score').forEach(el => el.style.color = color.text);
   document.querySelectorAll('.level-btn').forEach(btn => {
     btn.querySelector('.level-num').style.color = btn.classList.contains('selected') ? color.text : color.border;
@@ -172,8 +172,6 @@ function updateSessionPill() {
   const student = document.getElementById('student-name').value.trim();
   const date = document.getElementById('obs-date').value;
   const pill = document.getElementById('session-pill');
-  const pillDot = document.getElementById('pill-dot');
-  const label = document.getElementById('session-label');
   if (student && date) {
     const idx = getStudentSessionIndex(student, date);
     const color = SESSION_COLORS[Math.min(idx, SESSION_COLORS.length - 1)];
@@ -182,8 +180,8 @@ function updateSessionPill() {
     pill.style.background = color.fill;
     pill.style.borderColor = color.border;
     pill.style.color = color.text;
-    pillDot.style.background = color.dot;
-    label.textContent = color.label + ' for ' + student;
+    document.getElementById('pill-dot').style.background = color.dot;
+    document.getElementById('session-label').textContent = color.label + ' for ' + student;
   } else {
     pill.style.display = 'none';
   }
@@ -204,12 +202,10 @@ function buildDimensions() {
       </div>`;
     container.appendChild(div);
   });
-
   document.querySelectorAll('.level-btn').forEach(btn => {
     btn.addEventListener('click', function() {
       const dim = this.dataset.dim;
-      const level = parseInt(this.dataset.level);
-      scores[dim] = level;
+      scores[dim] = parseInt(this.dataset.level);
       document.querySelectorAll(`[data-dim="${dim}"]`).forEach(b => {
         b.classList.remove('selected'); b.style.borderColor = ''; b.style.background = ''; b.style.color = '';
         b.querySelector('.level-num').style.color = currentColor.border;
@@ -217,7 +213,7 @@ function buildDimensions() {
       this.classList.add('selected');
       this.style.borderColor = currentColor.border; this.style.background = currentColor.fill; this.style.color = currentColor.text;
       this.querySelector('.level-num').style.color = currentColor.text;
-      document.getElementById('score-' + dim).textContent = level;
+      document.getElementById('score-' + dim).textContent = scores[dim];
       updateTotal();
     });
   });
@@ -253,11 +249,23 @@ function renderSessionLog() {
   }).join('');
 }
 
-async function saveToSheet(data) {
-  await fetch(SCRIPT_URL + '?callback=cb', {
-    method: 'POST',
-    mode: 'no-cors',
-    body: JSON.stringify(data)
+function saveToSheet(data) {
+  return new Promise((resolve) => {
+    const params = new URLSearchParams({
+      date: data.date, student: data.student, tutor: data.tutor || '',
+      expression: data.expression, phrasing: data.phrasing,
+      smoothness: data.smoothness, pace: data.pace,
+      total: data.total, status: data.status
+    });
+    const form = document.createElement('form');
+    form.method = 'GET';
+    form.action = SCRIPT_URL + '?' + params.toString();
+    form.target = 'hidden-submit';
+    form.style.display = 'none';
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
+    setTimeout(resolve, 2500);
   });
 }
 
@@ -277,30 +285,23 @@ document.getElementById('btn-save').addEventListener('click', async function() {
   const status = total < 8 ? 'Concern' : 'Good progress';
   const statusEl = document.getElementById('save-status');
   const btn = document.getElementById('btn-save');
-
   btn.disabled = true;
   statusEl.innerHTML = '<span class="spinner"></span>Saving…';
 
-  const rowData = {
-    date: dateVal, student: studentVal, tutor: tutorVal,
+  const rowData = { date: dateVal, student: studentVal, tutor: tutorVal,
     expression: scores.expression, phrasing: scores.phrasing,
-    smoothness: scores.smoothness, pace: scores.pace,
-    total, status
-  };
+    smoothness: scores.smoothness, pace: scores.pace, total, status };
 
-  try {
-    await saveToSheet(rowData);
-    const h = getHistory();
-    h.push({ date: dateVal, student: studentVal, tutor: tutorVal, ...scores, total });
-    saveHistory(h);
-    sessionLog.push({ date: dateVal, student: studentVal, tutor: tutorVal, ...scores, total });
-    renderSessionLog();
-    updateSessionPill();
-    statusEl.textContent = '✓ Saved to Google Sheet';
-    setTimeout(() => { statusEl.textContent = ''; }, 4000);
-  } catch(err) {
-    statusEl.textContent = 'Error: ' + err.message;
-  }
+  await saveToSheet(rowData);
+
+  const h = getHistory();
+  h.push({ date: dateVal, student: studentVal, tutor: tutorVal, ...scores, total });
+  saveHistory(h);
+  sessionLog.push({ date: dateVal, student: studentVal, tutor: tutorVal, ...scores, total });
+  renderSessionLog();
+  updateSessionPill();
+  statusEl.textContent = '✓ Saved — check your Google Sheet to confirm';
+  setTimeout(() => { statusEl.textContent = ''; }, 5000);
   btn.disabled = false;
 });
 
