@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PEAK Fluency Scale</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #f5f4f0;
+    color: #1a1a1a;
+    min-height: 100vh;
+    padding: 1.5rem 1rem 3rem;
+  }
+
+  .container {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  .header {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 0.5px solid #d0cec7;
+  }
+
+  .header h1 {
+    font-size: 18px;
+    font-weight: 500;
+    color: #1a1a1a;
+    margin-bottom: 4px;
+  }
+
+  .header p {
+    font-size: 13px;
+    color: #666;
+  }
+
+  .header a {
+    color: #185FA5;
+    text-decoration: none;
+  }
+
+  .student-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .student-row input {
+    flex: 1;
+    min-width: 140px;
+    font-size: 14px;
+    padding: 8px 12px;
+    border: 1px solid #d0cec7;
+    border-radius: 8px;
+    background: #fff;
+    color: #1a1a1a;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .student-row input:focus { border-color: #378ADD; }
+  .student-row input[type="date"] { max-width: 180px; }
+
+  .tutor-row {
+    margin-bottom: 1rem;
+  }
+
+  .tutor-row input {
+    width: 100%;
+    font-size: 14px;
+    padding: 8px 12px;
+    border: 1px solid #d0cec7;
+    border-radius: 8px;
+    background: #fff;
+    color: #1a1a1a;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .tutor-row input:focus { border-color: #378ADD; }
+
+  .session-pill {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-size: 12px;
+    font-weight: 500;
+    margin-bottom: 1rem;
+    border: 1.5px solid;
+  }
+
+  .session-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+
+  .dimension {
+    background: #fff;
+    border: 0.5px solid #d0cec7;
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 12px;
+  }
+
+  .dim-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 10px;
+  }
+
+  .dim-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: #1a1a1a;
+  }
+
+  .dim-score {
+    font-size: 22px;
+    font-weight: 500;
+    min-width: 24px;
+    text-align: right;
+    color: #0C447C;
+  }
+
+  .levels {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  @media (max-width: 500px) {
+    .levels { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+
+  .level-btn {
+    border: 1.5px solid #d0cec7;
+    border-radius: 8px;
+    padding: 8px 6px;
+    cursor: pointer;
+    background: #fff;
+    text-align: left;
+    font-size: 11.5px;
+    line-height: 1.45;
+    color: #555;
+    transition: border-color 0.15s, background 0.15s;
+  }
+
+  .level-btn:hover {
+    border-color: #378ADD;
+    background: #E6F1FB;
+  }
+
+  .level-num {
+    display: block;
+    font-weight: 500;
+    font-size: 13px;
+    margin-bottom: 4px;
+    color: #378ADD;
+  }
+
+  .level-btn.selected .level-num { color: inherit; }
+
+  .total-card {
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    margin: 1.25rem 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1.5px solid #378ADD;
+    background: #E6F1FB;
+  }
+
+  .total-label { font-size: 13px; color: #0C447C; }
+  .total-range { font-size: 12px; color: #0C447C; opacity: 0.8; margin-top: 2px; }
+  .total-interp { font-size: 13px; margin-top: 4px; }
+  .status-ok { color: #27500A; }
+  .status-concern { color: #A32D2D; }
+  .total-score { font-size: 36px; font-weight: 500; color: #0C447C; }
+
+  .actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+
+  button {
+    font-size: 13px;
+    padding: 7px 18px;
+    border: 1px solid #d0cec7;
+    border-radius: 8px;
+    background: #fff;
+    color: #1a1a1a;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  button:hover { background: #f0ede8; }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  #btn-save {
+    background: #1a1a1a;
+    color: #fff;
+    border-color: #1a1a1a;
+  }
+
+  #btn-save:hover:not(:disabled) { background: #333; }
+
+  .save-status {
+    font-size: 12px;
+    color: #555;
+  }
+
+  .spinner {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border: 2px solid #d0cec7;
+    border-top-color: #555;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    vertical-align: middle;
+    margin-right: 4px;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .history-section { margin-top: 1.75rem; }
+  .history-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: #1a1a1a;
+    margin-bottom: 10px;
+  }
+
+  .history-entry {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 0.5px solid #d0cec7;
+    font-size: 13px;
+  }
+
+  .history-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .history-date { color: #666; min-width: 90px; }
+  .history-scores { color: #1a1a1a; flex: 1; }
+  .history-total { font-weight: 500; min-width: 30px; text-align: right; }
+
+  .footer {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 0.5px solid #d0cec7;
+    font-size: 11px;
+    color: #999;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <h1>Multidimensional Fluency Scale</h1>
+    <p>Zutell &amp; Rasinski, 1991 (updated Rasinski, 2004) &mdash; Saves to <a href="https://docs.google.com/spreadsheets/d/1IVkiTtlRGhQ7i_-bJBCWzliQ3bhHhAKCUT3T0w1Po80/edit" target="_blank">PEAK Fluency Observations</a> in Google Drive</p>
+  </div>
+
+  <div class="student-row">
+    <input type="text" id="student-name" placeholder="Student name" autocomplete="off" />
+    <input type="date" id="obs-date" />
+  </div>
+
+  <div class="tutor-row">
+    <input type="text" id="tutor-name" placeholder="Tutor name (optional)" autocomplete="off" />
+  </div>
+
+  <div id="session-pill" class="session-pill">
+    <span class="session-dot" id="pill-dot"></span>
+    <span id="session-label">1st session</span>
+  </div>
+
+  <div id="dimensions-container"></div>
+
+  <div class="total-card" id="total-card">
+    <div>
+      <div class="total-label">Total score</div>
+      <div class="total-range">4–16 &nbsp;|&nbsp; below 8 = concern &nbsp;|&nbsp; 8+ = good progress</div>
+      <div class="total-interp" id="interpretation"></div>
+    </div>
+    <div class="total-score" id="total-display">—</div>
+  </div>
+
+  <div class="actions">
+    <button id="btn-save">Save to Google Sheet</button>
+    <button id="btn-clear">Clear scores</button>
+    <span class="save-status" id="save-status"></span>
+  </div>
+
+  <div class="history-section" id="history-section" style="display:none;">
+    <div class="history-title">Saved this session</div>
+    <div id="history-list"></div>
+  </div>
+
+  <div class="footer">PEAK Literacy &mdash; peakliteracy.org &mdash; Adapted from Zutell &amp; Rasinski, 1991</div>
+</div>
+
+<script>
+const SHEET_ID = '1IVkiTtlRGhQ7i_-bJBCWzliQ3bhHhAKCUT3T0w1Po80';
+
+const DIMENSIONS = [
+  { id: 'expression', title: 'Expression & volume', levels: [
+    'Reads words simply to get them out. Little sense of trying to make text sound like natural language. Tends to read quietly.',
+    'Begins to use voice to make text sound like natural language in some areas but not others. Focus remains largely on pronouncing words. Still reads quietly.',
+    'Makes text sound like natural language throughout most of the passage. Occasionally slips into expressionless reading. Volume generally appropriate.',
+    'Reads with good expression and enthusiasm throughout. Varies expression and volume to match interpretation of the passage.'
+  ]},
+  { id: 'phrasing', title: 'Phrasing', levels: [
+    'Reads in a monotone with little sense of boundaries; frequently reads word-by-word.',
+    'Frequently reads in two- and three-word phrases, giving the impression of choppy reading; improper stress and intonation.',
+    'Reads with a mixture of run-ons, mid-sentence pauses, and some choppiness; reasonable stress and intonation.',
+    'Generally reads with good phrasing, mostly in clause and sentence units, with adequate attention to expression.'
+  ]},
+  { id: 'smoothness', title: 'Smoothness', levels: [
+    'Makes frequent extended pauses, hesitations, false starts, sound-outs, repetitions, and/or multiple attempts.',
+    'Experiences several "rough spots" where extended pauses or hesitations are more frequent and disruptive.',
+    'Occasionally breaks smooth rhythm because of difficulties with specific words and/or structures.',
+    'Generally reads smoothly with some breaks, but resolves word and structure difficulties quickly, usually through self-correction.'
+  ]},
+  { id: 'pace', title: 'Pace', levels: [
+    'Reads slowly and laboriously.',
+    'Reads moderately slowly.',
+    'Reads with an uneven mixture of fast and slow pace.',
+    'Consistently reads at conversational pace; appropriate rate throughout reading.'
+  ]}
+];
+
+const SESSION_COLORS = [
+  { label: '1st session', fill: '#E6F1FB', border: '#378ADD', text: '#0C447C', dot: '#378ADD' },
+  { label: '2nd session', fill: '#EAF3DE', border: '#639922', text: '#27500A', dot: '#639922' },
+  { label: '3rd session', fill: '#FAEEDA', border: '#BA7517', text: '#633806', dot: '#BA7517' },
+  { label: '4th session', fill: '#FBEAF0', border: '#D4537E', text: '#72243E', dot: '#D4537E' },
+  { label: '5th+ session', fill: '#EEEDFE', border: '#7F77DD', text: '#3C3489', dot: '#7F77DD' }
+];
+
+let scores = { expression: 0, phrasing: 0, smoothness: 0, pace: 0 };
+let currentColor = SESSION_COLORS[0];
+let sessionLog = [];
+
+function getHistory() {
+  try { return JSON.parse(localStorage.getItem('mfs_obs') || '[]'); } catch(e) { return []; }
+}
+function saveHistory(h) {
+  try { localStorage.setItem('mfs_obs', JSON.stringify(h)); } catch(e) {} 
+}
+
+function getStudentSessionIndex(studentName, dateStr) {
+  const h = getHistory();
+  const dates = [...new Set(h.filter(e => e.student === studentName).map(e => e.date))].sort();
+  const existing = dates.indexOf(dateStr);
+  if (existing !== -1) return existing;
+  return dates.length;
+}
+
+function applyColor(color) {
+  currentColor = color;
+  const tc = document.getElementById('total-card');
+  const td = document.getElementById('total-display');
+  tc.style.background = color.fill;
+  tc.style.borderColor = color.border;
+  td.style.color = color.text;
+  document.querySelectorAll('.dim-score').forEach(el => el.style.color = color.text);
+  document.querySelectorAll('.level-btn').forEach(btn => {
+    btn.querySelector('.level-num').style.color = btn.classList.contains('selected') ? color.text : color.border;
+    if (btn.classList.contains('selected')) {
+      btn.style.borderColor = color.border;
+      btn.style.background = color.fill;
+      btn.style.color = color.text;
+    }
+  });
+}
+
+function updateSessionPill() {
+  const student = document.getElementById('student-name').value.trim();
+  const date = document.getElementById('obs-date').value;
+  const pill = document.getElementById('session-pill');
+  const pillDot = document.getElementById('pill-dot');
+  const label = document.getElementById('session-label');
+
+  if (student && date) {
+    const idx = getStudentSessionIndex(student, date);
+    const color = SESSION_COLORS[Math.min(idx, SESSION_COLORS.length - 1)];
+    applyColor(color);
+    pill.style.display = 'inline-flex';
+    pill.style.background = color.fill;
+    pill.style.borderColor = color.border;
+    pill.style.color = color.text;
+    pillDot.style.background = color.dot;
+    label.textContent = color.label + ' for ' + student;
+  } else {
+    pill.style.display = 'none';
+  }
+}
+
+function buildDimensions() {
+  const container = document.getElementById('dimensions-container');
+  DIMENSIONS.forEach(dim => {
+    const div = document.createElement('div');
+    div.className = 'dimension';
+    div.innerHTML = `
+      <div class="dim-header">
+        <span class="dim-title">${dim.title}</span>
+        <span class="dim-score" id="score-${dim.id}">—</span>
+      </div>
+      <div class="levels">
+        ${dim.levels.map((text, i) => `
+          <button class="level-btn" data-dim="${dim.id}" data-level="${i+1}">
+            <span class="level-num">${i+1}</span>${text}
+          </button>
+        `).join('')}
+      </div>
+    `;
+    container.appendChild(div);
+  });
+
+  document.querySelectorAll('.level-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const dim = this.dataset.dim;
+      const level = parseInt(this.dataset.level);
+      scores[dim] = level;
+      document.querySelectorAll(`[data-dim="${dim}"]`).forEach(b => {
+        b.classList.remove('selected');
+        b.style.borderColor = '';
+        b.style.background = '';
+        b.style.color = '';
+        b.querySelector('.level-num').style.color = currentColor.border;
+      });
+      this.classList.add('selected');
+      this.style.borderColor = currentColor.border;
+      this.style.background = currentColor.fill;
+      this.style.color = currentColor.text;
+      this.querySelector('.level-num').style.color = currentColor.text;
+      document.getElementById('score-' + dim).textContent = level;
+      updateTotal();
+    });
+  });
+}
+
+function updateTotal() {
+  const vals = Object.values(scores).filter(v => v > 0);
+  const total = vals.reduce((a, b) => a + b, 0);
+  const display = document.getElementById('total-display');
+  const interp = document.getElementById('interpretation');
+  if (vals.length === 4) {
+    display.textContent = total;
+    interp.innerHTML = total < 8
+      ? '<span class="status-concern">Fluency may be a concern</span>'
+      : '<span class="status-ok">Making good progress in fluency</span>';
+  } else if (vals.length > 0) {
+    display.textContent = total + '…';
+    interp.textContent = vals.length + ' of 4 dimensions scored';
+  } else {
+    display.textContent = '—';
+    interp.textContent = '';
+  }
+}
+
+function renderSessionLog() {
+  const section = document.getElementById('history-section');
+  const list = document.getElementById('history-list');
+  if (sessionLog.length === 0) { section.style.display = 'none'; return; }
+  section.style.display = 'block';
+  list.innerHTML = sessionLog.slice().reverse().map(entry => {
+    const idx = getStudentSessionIndex(entry.student, entry.date);
+    const color = SESSION_COLORS[Math.min(idx, SESSION_COLORS.length - 1)];
+    return `<div class="history-entry">
+      <div class="history-dot" style="background:${color.dot}"></div>
+      <div class="history-date">${entry.date}</div>
+      <div class="history-scores">${entry.student}${entry.tutor ? ' / ' + entry.tutor : ''} &mdash; E:${entry.expression} Ph:${entry.phrasing} S:${entry.smoothness} Pa:${entry.pace}</div>
+      <div class="history-total" style="color:${color.text}">${entry.total}</div>
+    </div>`;
+  }).join('');
+}
+
+async function appendToSheet(rowData) {
+  const values = [
+    rowData.date,
+    rowData.student,
+    rowData.tutor || '',
+    rowData.expression,
+    rowData.phrasing,
+    rowData.smoothness,
+    rowData.pace,
+    rowData.total,
+    rowData.status
+  ];
+
+  const prompt = `You have access to the Google Drive MCP server which includes Google Sheets access.
+
+Please append a row to the Google Sheets spreadsheet with ID "${SHEET_ID}".
+
+First check if the spreadsheet has any data. If it is empty (no headers), first write this header row to Sheet1, row 1:
+Date, Student Name, Tutor, Expression & Volume, Phrasing, Smoothness, Pace, Total Score, Fluency Status
+
+Then append the following data as the next available row:
+- Date: ${values[0]}
+- Student Name: ${values[1]}
+- Tutor: ${values[2]}
+- Expression & Volume: ${values[3]}
+- Phrasing: ${values[4]}
+- Smoothness: ${values[5]}
+- Pace: ${values[6]}
+- Total Score: ${values[7]}
+- Fluency Status: ${values[8]}
+
+Use the Google Sheets API through the MCP server. The spreadsheet ID is: ${SHEET_ID}`;
+
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1000,
+      messages: [{ role: 'user', content: prompt }],
+      mcp_servers: [{
+        type: 'url',
+        url: 'https://drivemcp.googleapis.com/mcp/v1',
+        name: 'google-drive'
+      }]
+    })
+  });
+
+  if (!response.ok) throw new Error('API request failed');
+  const data = await response.json();
+  if (data.error) throw new Error(data.error.message);
+  return data;
+}
+
+document.getElementById('student-name').addEventListener('input', updateSessionPill);
+document.getElementById('obs-date').addEventListener('change', updateSessionPill);
+
+document.getElementById('btn-save').addEventListener('click', async function() {
+  const vals = Object.values(scores).filter(v => v > 0);
+  if (vals.length < 4) { alert('Please score all 4 dimensions before saving.'); return; }
+  const dateVal = document.getElementById('obs-date').value;
+  const studentVal = document.getElementById('student-name').value.trim();
+  const tutorVal = document.getElementById('tutor-name').value.trim();
+  if (!dateVal) { alert('Please select a date.'); return; }
+  if (!studentVal) { alert('Please enter a student name.'); return; }
+
+  const total = vals.reduce((a, b) => a + b, 0);
+  const status = total < 8 ? 'Concern' : 'Good progress';
+  const statusEl = document.getElementById('save-status');
+  const btn = document.getElementById('btn-save');
+
+  btn.disabled = true;
+  statusEl.innerHTML = '<span class="spinner"></span>Saving…';
+
+  try {
+    await appendToSheet({ date: dateVal, student: studentVal, tutor: tutorVal, ...scores, total, status });
+
+    const h = getHistory();
+    h.push({ date: dateVal, student: studentVal, tutor: tutorVal, ...scores, total });
+    saveHistory(h);
+
+    sessionLog.push({ date: dateVal, student: studentVal, tutor: tutorVal, ...scores, total });
+    renderSessionLog();
+    updateSessionPill();
+
+    statusEl.textContent = '✓ Saved to Google Sheet';
+    setTimeout(() => { statusEl.textContent = ''; }, 4000);
+  } catch(err) {
+    statusEl.textContent = 'Error: ' + err.message;
+  }
+
+  btn.disabled = false;
+});
+
+document.getElementById('btn-clear').addEventListener('click', function() {
+  scores = { expression: 0, phrasing: 0, smoothness: 0, pace: 0 };
+  document.querySelectorAll('.level-btn').forEach(b => {
+    b.classList.remove('selected');
+    b.style.borderColor = '';
+    b.style.background = '';
+    b.style.color = '';
+  });
+  document.querySelectorAll('.level-num').forEach(el => el.style.color = currentColor.border);
+  DIMENSIONS.forEach(d => { document.getElementById('score-' + d.id).textContent = '—'; });
+  updateTotal();
+});
+
+document.getElementById('obs-date').value = new Date().toISOString().split('T')[0];
+buildDimensions();
+updateSessionPill();
+</script>
+</body>
+</html>
